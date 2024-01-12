@@ -1,4 +1,4 @@
-# Usa una imagen de PHP 8.1 con Apache como base
+# Usa una imagen de PHP 8.2 con Apache como base
 FROM php:8.2-apache
 
 # Instala los paquetes necesarios y limpia la caché de APT
