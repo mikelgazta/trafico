@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libzip-dev 
+    libzip-dev
 
 # Habilita módulos de Apache
 RUN a2enmod rewrite
@@ -25,6 +25,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Establece el directorio de trabajo
 WORKDIR /var/www/html
+
+# Copia el código fuente de tu aplicación Laravel al contenedor
+COPY . /var/www/html
 
 # Instala Laravel Passport
 RUN export COMPOSER_ALLOW_SUPERUSER=1 \
