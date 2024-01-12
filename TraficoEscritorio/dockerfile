@@ -1,0 +1,14 @@
+# Usa una imagen base con Node.js y Electron
+FROM node:14
+
+# Establece el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copia todos los archivos del proyecto al directorio de trabajo
+COPY . .
+
+# Instala las dependencias
+RUN npm install
+
+# Cambia el script de inicio para ejecutar la aplicación Electron
+CMD ["npm", "run electron:serve"]

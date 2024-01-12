@@ -1,0 +1,49 @@
+# Usa una imagen de PHP 8.1 con Apache como base
+FROM php:8.2-apache
+
+# Instala los paquetes necesarios y limpia la caché de APT
+RUN apt-get update && apt-get install -y \
+    libonig-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev 
+
+# Habilita módulos de Apache
+RUN a2enmod rewrite
+
+# Configura ServerName
+RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf
+
+# Instala extensiones de PHP necesarias para Laravel
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
+
+# Instala Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Establece el directorio de trabajo
+WORKDIR /var/www/html
+
+# Instala Laravel Passport
+RUN export COMPOSER_ALLOW_SUPERUSER=1 \
+    && composer require laravel/passport
+
+# Ejecuta los comandos de Passport para generar claves
+RUN php artisan passport:install
+
+# Configura el directorio raíz de Apache a la carpeta public de Laravel
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Otorga permisos al directorio de almacenamiento de Laravel
+RUN chown -R www-data:www-data /var/www/html/storage \
+    && chmod -R 775 /var/www/html/storage
+
+# Exponer el puerto 80
+EXPOSE 8000
+
+# Comandos para iniciar Apache
+CMD ["apache2-foreground"]
